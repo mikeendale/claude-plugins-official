@@ -53,13 +53,13 @@ Start a Ralph loop in your current session.
 
 **Usage:**
 ```bash
-/ralph-loop "<prompt>" --max-iterations <n> --completion-promise "<text>" --clear-context
+/ralph-loop "<prompt>" --max-iterations <n> --completion-promise "<text>" [--no-clear-context]
 ```
 
 **Options:**
 - `--max-iterations <n>` - Stop after N iterations (default: unlimited)
 - `--completion-promise <text>` - Phrase that signals completion
-- `--clear-context` - Clear context window after each iteration (reduces token usage for long-running loops)
+- `--no-clear-context` - Keep context between iterations (default: context is cleared)
 
 ### /cancel-ralph
 
@@ -136,21 +136,16 @@ Always use `--max-iterations` as a safety net to prevent infinite loops on impos
 
 ### 5. Context Management
 
-For long-running loops, use `--clear-context` to prevent context window bloat:
+Context is cleared by default after each iteration to prevent context window bloat. Work persists in files, so context clearing doesn't lose progress.
 
-```bash
-# Recommended for loops with many iterations
-/ralph-loop "Build feature X" --max-iterations 50 --clear-context
-```
-
-**When to use `--clear-context`:**
-- Long-running loops (20+ iterations expected)
-- Tasks that generate verbose output
-- Loops where previous conversation isn't needed (work persists in files)
-
-**When NOT to use:**
+**When to use `--no-clear-context`:**
 - Short loops where context continuity helps
 - Tasks requiring memory of previous attempts in conversation
+
+```bash
+# Keep context for tasks that need conversation memory
+/ralph-loop "Debug complex issue" --max-iterations 10 --no-clear-context
+```
 
 ## Philosophy
 

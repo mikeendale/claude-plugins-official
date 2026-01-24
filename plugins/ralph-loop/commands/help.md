@@ -39,13 +39,13 @@ Start a Ralph loop in your current session.
 ```
 /ralph-loop "Refactor the cache layer" --max-iterations 20
 /ralph-loop "Add tests" --completion-promise "TESTS COMPLETE"
-/ralph-loop "Build feature X" --max-iterations 50 --clear-context
+/ralph-loop "Build feature X" --max-iterations 50 --no-clear-context
 ```
 
 **Options:**
 - `--max-iterations <n>` - Max iterations before auto-stop
 - `--completion-promise <text>` - Promise phrase to signal completion
-- `--clear-context` - Clear context window after each iteration
+- `--no-clear-context` - Keep context between iterations (default: context is cleared)
 
 **How it works:**
 1. Creates `.claude/.ralph-loop.local.md` state file
@@ -95,10 +95,12 @@ The "loop" doesn't mean Claude talks to itself. It means:
 
 ### Context Clearing
 
-Use `--clear-context` for long-running loops to:
+Context is cleared by default after each iteration to:
 - Prevent context window bloat
 - Reduce token usage
 - Start each iteration fresh (work still persists in files)
+
+Use `--no-clear-context` if you need to preserve conversation context.
 
 ## Example
 
