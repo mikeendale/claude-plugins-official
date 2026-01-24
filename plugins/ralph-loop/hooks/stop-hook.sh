@@ -23,6 +23,8 @@ ITERATION=$(echo "$FRONTMATTER" | grep '^iteration:' | sed 's/iteration: *//')
 MAX_ITERATIONS=$(echo "$FRONTMATTER" | grep '^max_iterations:' | sed 's/max_iterations: *//')
 # Extract completion_promise and strip surrounding quotes if present
 COMPLETION_PROMISE=$(echo "$FRONTMATTER" | grep '^completion_promise:' | sed 's/completion_promise: *//' | sed 's/^"\(.*\)"$/\1/')
+# Extract clear_context setting (defaults to false if not present)
+CLEAR_CONTEXT=$(echo "$FRONTMATTER" | grep '^clear_context:' | sed 's/clear_context: *//' || echo "false")
 
 # Validate numeric fields before arithmetic operations
 if [[ ! "$ITERATION" =~ ^[0-9]+$ ]]; then
@@ -162,16 +164,34 @@ else
   SYSTEM_MSG="🔄 Ralph iteration $NEXT_ITERATION | No completion promise set - loop runs infinitely"
 fi
 
+# Add context clearing info to system message if enabled
+if [[ "$CLEAR_CONTEXT" == "true" ]]; then
+  SYSTEM_MSG="$SYSTEM_MSG | Context cleared"
+fi
+
 # Output JSON to block the stop and feed prompt back
 # The "reason" field contains the prompt that will be sent back to Claude
-jq -n \
-  --arg prompt "$PROMPT_TEXT" \
-  --arg msg "$SYSTEM_MSG" \
-  '{
-    "decision": "block",
-    "reason": $prompt,
-    "systemMessage": $msg
-  }'
+# The "clearContext" field signals Claude Code to clear the context window
+if [[ "$CLEAR_CONTEXT" == "true" ]]; then
+  jq -n \
+    --arg prompt "$PROMPT_TEXT" \
+    --arg msg "$SYSTEM_MSG" \
+    '{
+      "decision": "block",
+      "reason": $prompt,
+      "systemMessage": $msg,
+      "clearContext": true
+    }'
+else
+  jq -n \
+    --arg prompt "$PROMPT_TEXT" \
+    --arg msg "$SYSTEM_MSG" \
+    '{
+      "decision": "block",
+      "reason": $prompt,
+      "systemMessage": $msg
+    }'
+fi
 
 # Exit 0 for successful hook execution
 exit 0

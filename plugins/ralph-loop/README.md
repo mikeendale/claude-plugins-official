@@ -53,12 +53,13 @@ Start a Ralph loop in your current session.
 
 **Usage:**
 ```bash
-/ralph-loop "<prompt>" --max-iterations <n> --completion-promise "<text>"
+/ralph-loop "<prompt>" --max-iterations <n> --completion-promise "<text>" --clear-context
 ```
 
 **Options:**
 - `--max-iterations <n>` - Stop after N iterations (default: unlimited)
 - `--completion-promise <text>` - Phrase that signals completion
+- `--clear-context` - Clear context window after each iteration (reduces token usage for long-running loops)
 
 ### /cancel-ralph
 
@@ -132,6 +133,24 @@ Always use `--max-iterations` as a safety net to prevent infinite loops on impos
 ```
 
 **Note**: The `--completion-promise` uses exact string matching, so you cannot use it for multiple completion conditions (like "SUCCESS" vs "BLOCKED"). Always rely on `--max-iterations` as your primary safety mechanism.
+
+### 5. Context Management
+
+For long-running loops, use `--clear-context` to prevent context window bloat:
+
+```bash
+# Recommended for loops with many iterations
+/ralph-loop "Build feature X" --max-iterations 50 --clear-context
+```
+
+**When to use `--clear-context`:**
+- Long-running loops (20+ iterations expected)
+- Tasks that generate verbose output
+- Loops where previous conversation isn't needed (work persists in files)
+
+**When NOT to use:**
+- Short loops where context continuity helps
+- Tasks requiring memory of previous attempts in conversation
 
 ## Philosophy
 
