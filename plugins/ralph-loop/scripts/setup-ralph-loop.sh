@@ -9,6 +9,7 @@ set -euo pipefail
 PROMPT_PARTS=()
 MAX_ITERATIONS=0
 COMPLETION_PROMISE="null"
+CLEAR_CONTEXT=true  # Default: clear context after each iteration
 
 # Parse options and positional arguments
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,7 @@ ARGUMENTS:
 OPTIONS:
   --max-iterations <n>           Maximum iterations before auto-stop (default: unlimited)
   --completion-promise '<text>'  Promise phrase (USE QUOTES for multi-word)
+  --no-clear-context             Keep context between iterations (default: context is cleared)
   -h, --help                     Show this help message
 
 DESCRIPTION:
@@ -44,6 +46,7 @@ EXAMPLES:
   /ralph-loop --max-iterations 10 Fix the auth bug
   /ralph-loop Refactor cache layer  (runs forever)
   /ralph-loop --completion-promise 'TASK COMPLETE' Create a REST API
+  /ralph-loop --no-clear-context Build feature X --max-iterations 30  (keep context)
 
 STOPPING:
   Only by reaching --max-iterations or detecting --completion-promise
@@ -101,6 +104,10 @@ HELP_EOF
       COMPLETION_PROMISE="$2"
       shift 2
       ;;
+    --no-clear-context)
+      CLEAR_CONTEXT=false
+      shift
+      ;;
     *)
       # Non-option argument - collect all as prompt parts
       PROMPT_PARTS+=("$1")
@@ -143,6 +150,7 @@ active: true
 iteration: 1
 max_iterations: $MAX_ITERATIONS
 completion_promise: $COMPLETION_PROMISE_YAML
+clear_context: $CLEAR_CONTEXT
 started_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ---
 
@@ -156,6 +164,7 @@ cat <<EOF
 Iteration: 1
 Max iterations: $(if [[ $MAX_ITERATIONS -gt 0 ]]; then echo $MAX_ITERATIONS; else echo "unlimited"; fi)
 Completion promise: $(if [[ "$COMPLETION_PROMISE" != "null" ]]; then echo "${COMPLETION_PROMISE//\"/} (ONLY output when TRUE - do not lie!)"; else echo "none (runs forever)"; fi)
+Clear context: $(if [[ "$CLEAR_CONTEXT" == "true" ]]; then echo "enabled (context cleared after each iteration)"; else echo "disabled"; fi)
 
 The stop hook is now active. When you try to exit, the SAME PROMPT will be
 fed back to you. You'll see your previous work in files, creating a
