@@ -9,7 +9,7 @@ set -euo pipefail
 PROMPT_PARTS=()
 MAX_ITERATIONS=0
 COMPLETION_PROMISE="null"
-CLEAR_CONTEXT=false
+CLEAR_CONTEXT=true  # Default: clear context after each iteration
 
 # Parse options and positional arguments
 while [[ $# -gt 0 ]]; do
@@ -27,7 +27,7 @@ ARGUMENTS:
 OPTIONS:
   --max-iterations <n>           Maximum iterations before auto-stop (default: unlimited)
   --completion-promise '<text>'  Promise phrase (USE QUOTES for multi-word)
-  --clear-context                Clear context window after each iteration (reduces token usage)
+  --no-clear-context             Keep context between iterations (default: context is cleared)
   -h, --help                     Show this help message
 
 DESCRIPTION:
@@ -46,7 +46,7 @@ EXAMPLES:
   /ralph-loop --max-iterations 10 Fix the auth bug
   /ralph-loop Refactor cache layer  (runs forever)
   /ralph-loop --completion-promise 'TASK COMPLETE' Create a REST API
-  /ralph-loop --clear-context Build feature X --max-iterations 30
+  /ralph-loop --no-clear-context Build feature X --max-iterations 30  (keep context)
 
 STOPPING:
   Only by reaching --max-iterations or detecting --completion-promise
@@ -104,8 +104,8 @@ HELP_EOF
       COMPLETION_PROMISE="$2"
       shift 2
       ;;
-    --clear-context)
-      CLEAR_CONTEXT=true
+    --no-clear-context)
+      CLEAR_CONTEXT=false
       shift
       ;;
     *)
